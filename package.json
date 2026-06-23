@@ -1,0 +1,18 @@
+
+{
+  "name": "lightningchat-ws",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Websocket server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fast-jwt": "^6.2.4",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.67.0"
+  }
+}
