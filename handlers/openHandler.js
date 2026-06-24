@@ -1,5 +1,5 @@
 // handlers/openHandler.js
-import { addUser, watchers, onlineUsers } from '../services/presenceService.js';
+import { addUser, watchers, sendToUser } from '../services/presenceService.js';
 import { encodePresence } from '../utils/binaryProtocol.js';
 
 export function handleOpen(ws) {
@@ -15,10 +15,7 @@ export function handleOpen(ws) {
   if (watcherSet && watcherSet.size > 0) {
     const onlineMsg = encodePresence(userId, true);
     for (const watcherId of watcherSet) {
-      const watcherWs = onlineUsers.get(watcherId);
-      if (watcherWs) {
-        watcherWs.send(onlineMsg, true);
-      }
+      sendToUser(watcherId, onlineMsg, true);   // safe – no crash on dead sockets
     }
   }
 }

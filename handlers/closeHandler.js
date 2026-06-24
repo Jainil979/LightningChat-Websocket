@@ -1,9 +1,9 @@
 // handlers/closeHandler.js
-import { removeUser, watchers, onlineUsers } from '../services/presenceService.js';
+import { removeUser, watchers, sendToUser } from '../services/presenceService.js';
 import { encodePresence } from '../utils/binaryProtocol.js';
 
 export function handleClose(ws) {
-  const userId = ws.userId;               // number
+  const userId = ws.userId;
   const lastSeen = Date.now();
 
   // Notify watchers BEFORE removing the user
@@ -11,13 +11,10 @@ export function handleClose(ws) {
   if (watcherSet && watcherSet.size > 0) {
     const offlineMsg = encodePresence(userId, false, lastSeen);
     for (const watcherId of watcherSet) {
-      const watcherWs = onlineUsers.get(watcherId);
-      if (watcherWs) {
-        watcherWs.send(offlineMsg, true);
-      }
+      sendToUser(watcherId, offlineMsg, true);   // safe – no crash on dead sockets
     }
   }
 
-  // Clean up all maps
+  // Complete cleanup – now also deletes watchers entry for this user
   removeUser(userId);
 }

@@ -16,7 +16,9 @@ export function addUser(userId, ws) {
 
 export function removeUser(userId) {
   onlineUsers.delete(userId);
+
   const set = subscriptions.get(userId);
+
   subscriptions.delete(userId);
 
   // Remove this user from the watchers sets of every user they were watching
@@ -29,6 +31,9 @@ export function removeUser(userId) {
       }
     }
   }
+
+  // 4. Delete the entry that lists who was watching this user (previously missing)
+  watchers.delete(userId);
 }
 
 export function setSubscriptions(userId, userIds) {
@@ -57,12 +62,18 @@ export function setSubscriptions(userId, userIds) {
   }
 }
 
-export function sendToUser(userId, data, isBinary = false) {
 
+// Safe sending – prevents crash if target socket is already closed
+export function sendToUser(userId, data, isBinary = false) {
   const ws = onlineUsers.get(userId);
   if (ws) {
-    ws.send(data, isBinary);
-    return true;
+    try {
+      ws.send(data, isBinary);
+      return true;
+    } catch (e) {
+      // Socket closed between lookup and send – ignore, close handler will clean it
+      return false;
+    }
   }
   return false;
 }
