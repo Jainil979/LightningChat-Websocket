@@ -10,8 +10,20 @@ export const subscriptions = new Map();
 export const watchers = new Map();
 
 export function addUser(userId, ws) {
+  const oldWs = onlineUsers.get(userId);
+
+  // 1. Store the new socket
   onlineUsers.set(userId, ws);
-  subscriptions.set(userId, new Set());
+
+  // 2. Preserve subscriptions across reconnects – only initialise if missing
+  if (!subscriptions.has(userId)) {
+    subscriptions.set(userId, new Set());
+  }
+
+  // 3. Close any old, lingering socket so its close handler becomes a no‑op
+  if (oldWs && oldWs !== ws) {
+    try { oldWs.close(); } catch (e) {}
+  }
 }
 
 export function removeUser(userId) {

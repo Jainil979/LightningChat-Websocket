@@ -1,9 +1,13 @@
 // handlers/closeHandler.js
-import { removeUser, watchers, sendToUser } from '../services/presenceService.js';
+import { removeUser, watchers, onlineUsers, sendToUser } from '../services/presenceService.js';
 import { encodePresence } from '../utils/binaryProtocol.js';
 
 export function handleClose(ws) {
   const userId = ws.userId;
+
+  // 🔒 IGNORE if this socket is no longer the active connection
+  if (onlineUsers.get(userId) !== ws) return;
+  
   const lastSeen = Date.now();
 
   // Notify watchers BEFORE removing the user
